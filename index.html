@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Team 7587 Scouting</title>
+    <script src="srcFile.js"></script>
+    <style>
+        :root {
+            --bg: #f4f4f9;
+            --c-bg: #fff;
+            --txt: #333;
+            --acc: #3498db;
+            --brd: #ccc;
+            --err: #e74c3c;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            padding: 15px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            margin-top: 100px;
+            background: var(--c-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--brd);
+        }
+
+        #pg-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 6px;
+            background: var(--acc);
+            width: 0%;
+            transition: 0.4s;
+            z-index: 1001;
+        }
+
+        #validation-err {
+            display: none;
+            background: var(--err);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        h2 {
+            color: var(--acc);
+            border-bottom: 2px solid var(--acc);
+            padding-bottom: 5px;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            label {
+                font-size: 30px;
+                ;
+            }
+
+            select {
+                font-size: 30px;
+                ;
+            }
+
+            input {
+                font-size: 30px;
+            }
+
+            input[type="range"] {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 100%;
+                height: 12px;
+                background: transparent;
+                cursor: pointer;
+            }
+
+            .nav-btn {
+                font-size: 30px;
+            }
+        }
+
+        select,
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            background: var(--c-bg);
+            border: 1px solid var(--brd);
+            color: var(--txt);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .nav-btn {
+            background: var(--acc);
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            width: 100%;
+        }
+
+        .cond-box {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid var(--acc);
+            display: none;
+        }
+
+        #qr-code {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background: white;
+            padding: 10px;
+            min-height: 256px;
+        }
+
+        #raw-data {
+            font-family: monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            background: #eee;
+            color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .missing {
+            border: 2px solid var(--err) !important;
+            background: #fdf2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="downloadOfflineBtn" style="width:20%;
+            position:absolute;
+            background: var(--acc);
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 40px;">Download Offline Version</button>
+    <div id="pg-bar"></div>
+    <div class="container">
+        <div id="validation-err">⚠️ Please fill in all red-bordered fields correctly.</div>
+
+        <form id="scoutForm">
+            <div id="sec-pre" class="section active">
+                <h2>Pre-Match</h2>
+                <label>Name</label><input type="text" data-label="Scout Name" required>
+                <label>Team Number</label><input type="number" data-label="Team #" required>
+                <label>Preloaded?</label>
+                <select data-label="Preloaded" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <label>Starting Position</label>
+                <select data-label="Start Pos" required>
+                    <option value="">Select...</option>
+                    <option>Right</option>
+                    <option>Hub</option>
+                    <option>Left</option>
+                </select>
+                <button type="button" class="nav-btn" onclick="validateAndNav('sec-auto')">Next: Auto</button>
+            </div>
+
+            <div id="sec-auto" class="section">
+                <h2>Auto</h2>
+                <label>Did they move?</label>
+                <select data-label="Auto: Moved" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <label>Hub Score (1-40): <span class="v">20</span></label>
+                <input type="range" data-label="Auto: Hub Score" min="1" max="40" value="20"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Cycle Time (1-10): <span class="v">5</span></label>
+                <input type="range" data-label="Auto: Cycle" min="1" max="10" value="5"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Did they hang?</label>
+                <select data-label="Auto: Hang" required>
+                    <option value="">Select...</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>N/A</option>
+                </select>
+                <label>Score most in Auto?</label>
+                <select id="auto-win" data-label="Auto: Scored Most" required>
+                    <option value="">Select...</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+                <button type="button" class="nav-btn" onclick="startTeleop()">Next: Teleop</button>
+            </div>
+
+            <div id="sec-trans" class="section">
+                <h2>Transition</h2>
+                <label>Did they move?</label>
+                <select data-label="Trans: Moved" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <label>Hub Score (1-40): <span class="v">20</span></label>
+                <input type="range" data-label="Trans: Hub Score" min="1" max="40" value="20"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Cycle Time (1-10): <span class="v">5</span></label>
+                <input type="range" data-label="Trans: Cycle" min="1" max="10" value="5"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Did they hang?</label>
+                <select data-label="Trans: Hang" required>
+                    <option value="">Select...</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>N/A</option>
+                </select>
+                <button type="button" class="nav-btn" onclick="nextPhase()">Next Phase</button>
+            </div>
+
+            <div id="template-active" class="section">
+                <h2 class="phase-name">Active Phase</h2>
+                <label>Did they move?</label>
+                <select class="data-f" data-label="Moved" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <label>Hub Score (1-40): <span class="v">20</span></label>
+                <input type="range" class="data-f" data-label="Hub Score" min="1" max="40" value="20"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Cycle Time (1-10): <span class="v">5</span></label>
+                <input type="range" class="data-f" data-label="Cycle" min="1" max="10" value="5"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Collect fuel from neutral zone?</label>
+                <select class="data-f" data-label="Neutral Zone" onchange="toggleFuel(this)" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <div class="cond-box">
+                    <label>Amt Collected (1-40)</label>
+                    <input type="number" class="data-f sub-req" data-label="Fuel Amt"
+                        onchange="clampValue(this, 1, 40)">
+                    <label>Fuel Cycle Time (1-10)</label>
+                    <input type="number" class="data-f sub-req" data-label="Fuel Cycle"
+                        onchange="clampValue(this, 1, 10)">
+                </div>
+                <label>Did they hang?</label>
+                <select class="data-f" data-label="Hang" required>
+                    <option value="">Select...</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>N/A</option>
+                </select>
+                <button type="button" class="nav-btn" onclick="nextPhase()">Next Phase</button>
+            </div>
+
+            <div id="template-inactive" class="section">
+                <h2 class="phase-name">Inactive Phase</h2>
+                <label>Did they move?</label>
+                <select class="data-f" data-label="Moved" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <label>Role played?</label>
+                <select class="data-f" data-label="Role" onchange="toggleRole(this)" required>
+                    <option value="">Select...</option>
+                    <option value="defense">defense</option>
+                    <option value="collect fuel">collect fuel</option>
+                    <option value="climb">climb</option>
+                    <option value="none">none</option>
+                </select>
+                <div class="role-box cond-box">
+                    <div class="d-only sub-sec" style="display:none">
+                        <label>Target Area</label>
+                        <select class="data-f sub-req" data-label="Def Target" onchange="toggleDefSub(this)">
+                            <option value="">Select...</option>
+                            <option value="hub">opposing hub</option>
+                            <option value="zone">zone</option>
+                        </select>
+                        <div class="hub-rating" style="display:none">
+                            <label>Hub Def Skill (1-10)</label>
+                            <input type="number" class="data-f sub-req-hub" data-label="Hub Def Skill"
+                                onchange="clampValue(this, 1, 10)">
+                        </div>
+                        <div class="zone-details" style="display:none">
+                            <label>Which did they defend?</label>
+                            <select class="data-f sub-req-zone" data-label="Def Zone Area">
+                                <option value="">Select...</option>
+                                <option>trench</option>
+                                <option>bump</option>
+                                <option>both</option>
+                            </select>
+                            <label>Zone Def Skill (1-10)</label>
+                            <input type="number" class="data-f sub-req-zone" data-label="Zone Def Skill"
+                                onchange="clampValue(this, 1, 10)">
+                        </div>
+                    </div>
+                    <div class="c-only sub-sec" style="display:none">
+                        <label>Climb Level</label>
+                        <select class="data-f sub-req" data-label="Climb Lvl">
+                            <option value="">Select...</option>
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>none</option>
+                        </select>
+                    </div>
+                    <div class="n-only sub-sec" style="display:none">
+                        <label>What did they do?</label>
+                        <textarea class="data-f sub-req" data-label="Inactive Notes"></textarea>
+                    </div>
+                </div>
+                <button type="button" class="nav-btn" onclick="nextPhase()">Next Phase</button>
+            </div>
+
+            <div id="sec-endgame" class="section">
+                <h2>Endgame</h2>
+                <label>Did they move?</label>
+                <select data-label="End: Moved" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <label>Hub Score (1-40): <span class="v">20</span></label>
+                <input type="range" data-label="End: Hub Score" min="1" max="40" value="20"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Cycle Time (1-10): <span class="v">5</span></label>
+                <input type="range" data-label="End: Cycle" min="1" max="10" value="5"
+                    oninput="this.previousElementSibling.firstElementChild.innerText=this.value">
+                <label>Did they hang?</label>
+                <select data-label="End: Hang" required>
+                    <option value="">Select...</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>none</option>
+                </select>
+                <label>Additional Ranking Points?</label>
+                <select data-label="End: Addl RP" onchange="toggleRP(this)" required>
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+                <div class="cond-box">
+                    <label>Status</label>
+                    <select data-label="End: RP Type" class="sub-req">
+                        <option value="">Select...</option>
+                        <option>ENERGIZED</option>
+                        <option>SUPERCHARGED</option>
+                    </select>
+                </div>
+                <button type="button" class="nav-btn" onclick="validateAndNav('sec-ratings')">Next: Final
+                    Ratings</button>
+            </div>
+
+            <div id="sec-ratings" class="section">
+                <h2>Final Ratings (1-10)</h2>
+                <label>Auto Rating</label><input type="number" data-label="R: Auto" onchange="clampValue(this, 1, 10)"
+                    required>
+                <label>Transition Rating</label><input type="number" data-label="R: Trans"
+                    onchange="clampValue(this, 1, 10)" required>
+                <label>Active Rating</label><input type="number" data-label="R: Active"
+                    onchange="clampValue(this, 1, 10)" required>
+                <label>Inactive Rating</label><input type="number" data-label="R: Inactive"
+                    onchange="clampValue(this, 1, 10)" required>
+                <label>Endgame Rating</label><input type="number" data-label="R: Endgame"
+                    onchange="clampValue(this, 1, 10)" required>
+                <hr>
+                <label>Overall Performance</label><input type="number" data-label="R: Overall"
+                    onchange="clampValue(this, 1, 10)" required>
+                <label>Strengths</label>
+                <select data-label="Strengths" required>
+                    <option value="">Select...</option>
+                    <option>Fuel scoring</option>
+                    <option>hanging</option>
+                    <option>defense</option>
+                    <option>fuel collection</option>
+                    <option>None of the Above</option>
+                </select>
+                <label>Explain Choice</label><textarea data-label="Strength Explanation" required></textarea>
+                <label>Further Notes</label><textarea data-label="General Notes" required></textarea>
+                <button type="button" class="nav-btn" onclick="generateQR()">Generate QR Code</button>
+            </div>
+
+            <div id="qr-screen" class="section">
+                <h2>Scan Data</h2>
+                <div id="qr-code"></div>
+                <div id="raw-data"></div>
+                <button type="button" class="nav-btn" onclick="resetForm()">New Match</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function loadScript(primary, fallback) {
+            return new Promise((resolve, reject) => {
+                const s = document.createElement("script");
+                s.src = primary;
+                s.onload = resolve;
+                s.onerror = () => {
+                    if (!fallback) return reject();
+                    const f = document.createElement("script");
+                    f.src = fallback;
+                    f.onload = resolve;
+                    f.onerror = reject;
+                    document.head.appendChild(f);
+                };
+                document.head.appendChild(s);
+            });
+        }
+
+        async function loadLibraries() {
+            await loadScript(
+                "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js",
+                "qrcode.min.js"
+            );
+
+            await loadScript(
+                "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+                "jszip.min.js"
+            );
+        }
+
+async function downloadOfflinePackage() {
+    if (typeof JSZip === "undefined") {
+        alert("JSZip not loaded.");
+        return;
+    }
+
+    const zip = new JSZip();
+
+    try {
+        /* ---------- INTERNAL FILES ---------- */
+        const file1 = srcFileCode;
+        const file2 = qrLibrary;
+        const file3 = zipLibrary;
+        const file4 = resultsFile;
+
+        /* ---------- EXTERNAL FILE (html5-qrcode) ---------- */
+        // We fetch this directly to avoid variable-storage corruption
+        const h5qrResponse = await fetch("https://unpkg.com/html5-qrcode");
+        
+        if (!h5qrResponse.ok) {
+            throw new Error("Failed to fetch the html5-qrcode library.");
+        }
+        
+        const file5 = await h5qrResponse.text();
+
+        /* ---------- ADDING TO ZIP ---------- */
+        zip.file("index.html", file1);
+        zip.file("qrcode.min.js", file2);
+        zip.file("jszip.min.js", file3);
+        zip.file("results.html", file4);
+        zip.file("html5-qrcode.min.js", file5);
+
+        /* ---------- GENERATE AND DOWNLOAD ---------- */
+        const blob = await zip.generateAsync({ type: "blob" });
+
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "scoutingWebsite.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+    } catch (error) {
+        console.error("Download failed:", error);
+        alert("An error occurred while creating the offline package. Check the console for details.");
+    }
+}
+
+        loadLibraries().then(() => {
+            const btn = document.getElementById("downloadOfflineBtn");
+            if (btn) btn.onclick = downloadOfflinePackage;
+        });
+        let phasePath = [];
+        let currentPhaseIdx = 0;
+
+        function isVisible(el) { return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length); }
+
+        function clampValue(el, min, max) {
+            let val = parseInt(el.value);
+            if (isNaN(val)) return;
+            if (val < min) el.value = min; if (val > max) el.value = max;
+        }
+
+        function validateAndNav(targetId) {
+            const curr = document.querySelector('.section.active');
+            const errDiv = document.getElementById('validation-err');
+            let isValid = true;
+
+            curr.querySelectorAll('.missing').forEach(el => el.classList.remove('missing'));
+            curr.querySelectorAll('[required]').forEach(el => {
+                if (!el.value) { isValid = false; el.classList.add('missing'); }
+            });
+
+            curr.querySelectorAll('.sub-req, .sub-req-hub, .sub-req-zone').forEach(subEl => {
+                const parentContainer = subEl.closest('.sub-sec, .cond-box, .hub-rating, .zone-details');
+                if (parentContainer && isVisible(parentContainer)) {
+                    if (!subEl.value) { isValid = false; subEl.classList.add('missing'); }
+                }
+            });
+
+            if (!isValid) {
+                errDiv.style.display = 'block';
+                window.scrollTo(0, 0);
+                return false;
+            }
+
+            errDiv.style.display = 'none';
+            curr.classList.remove('active');
+            const target = document.getElementById(targetId);
+            if (target) { target.classList.add('active'); updateProgress(targetId); }
+            window.scrollTo(0, 0);
+            return true;
+        }
+
+        function startTeleop() {
+            const mostInAuto = document.getElementById('auto-win').value;
+            phasePath = (mostInAuto === 'Yes') ?
+                [{ temp: 'template-inactive', name: 'INITIAL INACTIVE' }, { temp: 'template-active', name: 'INITIAL ACTIVE' }, {
+                    temp: 'template-inactive', name: 'SECOND INACTIVE'
+                }, { temp: 'template-active', name: 'SECOND ACTIVE' }] :
+                [{ temp: 'template-active', name: 'INITIAL ACTIVE' }, { temp: 'template-inactive', name: 'INITIAL INACTIVE' }, {
+                    temp: 'template-active', name: 'SECOND ACTIVE'
+                }, { temp: 'template-inactive', name: 'SECOND INACTIVE' }];
+            validateAndNav('sec-trans');
+        }
+
+        function nextPhase() {
+            let targetId = (currentPhaseIdx < phasePath.length) ? 'phase-' + currentPhaseIdx : 'sec-endgame'; if
+                (currentPhaseIdx < phasePath.length && !document.getElementById(targetId)) {
+                const p = phasePath[currentPhaseIdx];
+                const temp = document.getElementById(p.temp); const clone = temp.cloneNode(true); clone.id = targetId;
+                clone.querySelector('.phase-name').innerText = p.name; clone.querySelectorAll('.data-f').forEach(el =>
+                    el.setAttribute('data-label', p.name + ": " + el.getAttribute('data-label')));
+                document.getElementById('scoutForm').insertBefore(clone, document.getElementById('sec-endgame'));
+            }
+            if (validateAndNav(targetId) && currentPhaseIdx < phasePath.length) currentPhaseIdx++;
+        } function toggleFuel(s) { s.nextElementSibling.style.display = (s.value === 'Yes' ? 'block' : 'none'); } function toggleRP(s) {
+            s.nextElementSibling.style.display = (s.value === 'Yes' ? 'block' : 'none');
+        } function toggleRole(s) {
+            const
+                rb = s.nextElementSibling; rb.querySelectorAll('.sub-sec').forEach(el => el.style.display = 'none');
+            if (s.value && s.value !== '') {
+                rb.style.display = 'block';
+                const map = { 'defense': '.d-only', 'climb': '.c-only', 'none': '.n-only' };
+                if (map[s.value]) rb.querySelector(map[s.value]).style.display = 'block';
+            } else { rb.style.display = 'none'; }
+        }
+        function toggleDefSub(s) {
+            const p = s.parentElement;
+            p.querySelector('.hub-rating').style.display = (s.value === 'hub' ? 'block' : 'none');
+            p.querySelector('.zone-details').style.display = (s.value === 'zone' ? 'block' : 'none');
+        }
+
+        function updateProgress(id) {
+            const list = ['sec-pre', 'sec-auto', 'sec-trans', 'phase-0', 'phase-1', 'phase-2', 'phase-3', 'sec-endgame',
+                'sec-ratings'];
+            const idx = list.indexOf(id);
+            if (idx !== -1) document.getElementById('pg-bar').style.width = ((idx + 1) / list.length * 100) + '%';
+        }
+
+        function generateQR() {
+            if (!validateAndNav('qr-screen')) return;
+
+            let data = [];
+            const inputs = document.querySelectorAll('#scoutForm input, #scoutForm select, #scoutForm textarea');
+
+            // Helper to turn dropdown text into a simple number index
+            const getVal = (el) => {
+                if (el.tagName === 'SELECT') return el.selectedIndex; // Sends 1, 2, 3...
+                return el.value.replace(/\x00/g, "").replace(/\|/g, " ").trim();
+            };
+
+            inputs.forEach(i => {
+                const parentSection = i.closest('.section');
+                // Ignore templates
+                if (parentSection.id === 'template-active' || parentSection.id === 'template-inactive') return;
+
+                // Check if the field was actually "active" for this match
+                const condBox = i.closest('.cond-box, .sub-sec, .hub-rating, .zone-details');
+                if (condBox && window.getComputedStyle(condBox).display === 'none') {
+                    data.push(""); // Placeholder for skipped conditional data to keep order
+                } else {
+                    data.push(getVal(i));
+                }
+            });
+            let str = data.join('|'); // The QR code is now just: "John|1234|1|2|1|20|5|..."
+
+
+            document.getElementById('qr-code').innerHTML = "";
+            new QRCode(document.getElementById("qr-code"), {
+                text: str,
+                width: 400,
+                height: 400,
+                correctLevel: QRCode.CorrectLevel.L
+            });
+            document.getElementById('raw-data').innerText = str;
+        }
+        function resetForm() {
+            // 1. Reset the actual form data
+            document.getElementById('scoutForm').reset();
+
+            // 2. Remove all cloned phases (phase-0, phase-1, etc.)
+            const clones = document.querySelectorAll('[id^="phase-"]');
+            clones.forEach(c => c.remove());
+
+            // 3. Reset internal state
+            currentPhaseIdx = 0;
+            phasePath = [];
+
+            // 4. Reset UI
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('sec-pre').classList.add('active');
+            document.getElementById('pg-bar').style.width = '0%';
+            document.getElementById('validation-err').style.display = 'none';
+
+            // 5. Hide all conditional boxes
+            document.querySelectorAll('.cond-box, .sub-sec, .hub-rating, .zone-details').forEach(b => b.style.display =
+                'none');
+
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+
+</html>
