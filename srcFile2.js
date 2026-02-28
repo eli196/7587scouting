@@ -64,7 +64,6 @@ var resultsFile = `<!DOCTYPE html>
         .report-summary {
             padding: 15px;
             padding-right: 80px;
-            /* Space for delete button */
             background: #fff;
             cursor: pointer;
             display: flex;
@@ -181,7 +180,7 @@ var resultsFile = `<!DOCTYPE html>
                 <span class="report-count" id="count-badge">0 Scanned</span>
             </div>
 
-            <button class="btn btn-export" id="btn-export" onclick="exportToHTMLFile()">⤓ Export</button>
+            <button class="btn btn-export" id="btn-export" onclick="exportToHTMLFile()">📥 Export</button>
 
             <div id="report-list">
                 <p style="text-align:center; color:#999; margin:40px 0;">No reports scanned yet.</p>
@@ -397,10 +396,7 @@ var resultsFile = `<!DOCTYPE html>
         th { background-color: #f1f3f5; font-weight: 600; cursor: default; }
         tr { cursor: pointer; }
         tr:nth-child(even) { background-color: #fafafa; }
-        
-        /* The "Selected" State */
         tr.selected { background-color: #dee2e6 !important; }
-        
         .btn-copy { 
             padding: 10px 20px; font-weight: bold; cursor: pointer; 
             background: #0f9d58; color: white; border: none; border-radius: 4px; 
@@ -453,7 +449,6 @@ var resultsFile = `<!DOCTYPE html>
                 return;
             }
 
-            // Convert selected rows to Tab-Separated Values (TSV)
             const tsvData = Array.from(selectedRows).map(row => {
                 const cells = row.querySelectorAll('.data-cell');
                 return Array.from(cells).map(td => td.innerText).join("\\t");
@@ -474,8 +469,8 @@ var resultsFile = `<!DOCTYPE html>
             });
         }
     <\/script>
-</body>
-</html>\`;
+<\/body>
+<\/html>\`;
 
             // Download Logic
             const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -488,7 +483,6 @@ var resultsFile = `<!DOCTYPE html>
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         }
-    </script>
-</body>
-
-</html>`;
+    <\/script>
+<\/body>
+<\/html>`;
