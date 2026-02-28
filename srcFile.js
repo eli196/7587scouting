@@ -443,12 +443,12 @@ var srcFileCode = `<!DOCTYPE html>
         async function loadLibraries() {
             await loadScript(
                 "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js",
-                "qrcode.min.js"
+                "libraries/qrcode.min.js"
             );
 
             await loadScript(
                 "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
-                "jszip.min.js"
+                "libraries/jszip.min.js"
             );
         }
 
@@ -550,43 +550,34 @@ var srcFileCode = `<!DOCTYPE html>
             let data = [];
             const inputs = document.querySelectorAll('#scoutForm input, #scoutForm select, #scoutForm textarea');
 
-            // Helper to turn dropdown text into a simple number index
 const getVal = (el) => {
     if (el.tagName === 'SELECT') return el.selectedIndex;
 
-    // 1. Get the raw value
     let val = el.value;
 
-    // 2. FORCE RE-ENCODING: 
-    // We filter the string to only keep characters with a code between 32 and 126.
-    // This removes null bytes, "wide" characters, and ghost spaces.
     let clean = "";
     for (let i = 0; i < val.length; i++) {
         let code = val.charCodeAt(i);
-        // Char code 32 is space, 126 is ~ (covers all standard keyboard keys)
         if (code >= 32 && code <= 126) {
             clean += val.charAt(i);
         }
     }
 
-    // 3. Final cleanup: replace pipes and trim
     return clean.replace(/\|/g, "").trim();
 };
 
             inputs.forEach(i => {
                 const parentSection = i.closest('.section');
-                // Ignore templates
                 if (parentSection.id === 'template-active' || parentSection.id === 'template-inactive') return;
 
-                // Check if the field was actually "active" for this match
                 const condBox = i.closest('.cond-box, .sub-sec, .hub-rating, .zone-details');
                 if (condBox && window.getComputedStyle(condBox).display === 'none') {
-                    data.push(""); // Placeholder for skipped conditional data to keep order
+                    data.push("");
                 } else {
                     data.push(getVal(i));
                 }
             });
-            let str = data.join('|'); // The QR code is now just: "John|1234|1|2|1|20|5|..."
+            let str = data.join('|');
 
             document.getElementById('qr-code').innerHTML = "";
             new QRCode(document.getElementById("qr-code"), {
@@ -598,24 +589,19 @@ const getVal = (el) => {
             document.getElementById('raw-data').innerText = str;
         }
         function resetForm() {
-            // 1. Reset the actual form data
             document.getElementById('scoutForm').reset();
 
-            // 2. Remove all cloned phases (phase-0, phase-1, etc.)
             const clones = document.querySelectorAll('[id^="phase-"]');
             clones.forEach(c => c.remove());
 
-            // 3. Reset internal state
             currentPhaseIdx = 0;
             phasePath = [];
 
-            // 4. Reset UI
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById('sec-pre').classList.add('active');
             document.getElementById('pg-bar').style.width = '0%';
             document.getElementById('validation-err').style.display = 'none';
 
-            // 5. Hide all conditional boxes
             document.querySelectorAll('.cond-box, .sub-sec, .hub-rating, .zone-details').forEach(b => b.style.display =
                 'none');
 

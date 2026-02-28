@@ -4,8 +4,8 @@ var resultsFile = `<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team 7587 Scouting</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="libraries/html5-qrcode.min.js"></script>
+    <title>Team 7587 Scouting<\/title>
     <style>
         :root {
             --bg: #f4f4f9;
@@ -64,6 +64,7 @@ var resultsFile = `<!DOCTYPE html>
         .report-summary {
             padding: 15px;
             padding-right: 80px;
+            \/* Space for delete button *\/
             background: #fff;
             cursor: pointer;
             display: flex;
@@ -169,38 +170,38 @@ var resultsFile = `<!DOCTYPE html>
             background: #95a5a6;
             margin-top: 15px;
         }
-    </style>
-</head>
+    <\/style>
+<\/head>
 
 <body>
     <div class="container">
         <div id="home-screen">
             <div class="header-flex">
-                <h2>Match Reports</h2>
-                <span class="report-count" id="count-badge">0 Scanned</span>
-            </div>
+                <h2>Match Reports<\/h2>
+                <span class="report-count" id="count-badge">0 Scanned<\/span>
+            <\/div>
 
-            <button class="btn btn-export" id="btn-export" onclick="exportToHTMLFile()">📥 Export</button>
+            <button class="btn btn-export" id="btn-export" onclick="exportToHTMLFile()">⤓ Export<\/button>
 
             <div id="report-list">
-                <p style="text-align:center; color:#999; margin:40px 0;">No reports scanned yet.</p>
-            </div>
+                <p style="text-align:center; color:#999; margin:40px 0;">No reports scanned yet.<\/p>
+            <\/div>
 
             <div class="button-group">
-                <button class="btn btn-scan" onclick="showScanner()">📷 Scan via Camera</button>
-                <button class="btn btn-upload" onclick="triggerFileUpload()">📁 Upload Screenshot</button>
-            </div>
+                <button class="btn btn-scan" onclick="showScanner()">📷 Scan via Camera<\/button>
+                <button class="btn btn-upload" onclick="triggerFileUpload()">📁 Upload Screenshot<\/button>
+            <\/div>
 
-            <input type="file" id="qr-input-file" accept="image/*" style="display: none"
+            <input type="file" id="qr-input-file" accept="image\/*" style="display: none"
                 onchange="handleFileUpload(this)">
-        </div>
+        <\/div>
 
         <div id="scanner-view">
-            <h2>Scan QR Code</h2>
-            <div id="reader"></div>
-            <button class="btn btn-cancel" onclick="hideScanner()">Cancel</button>
-        </div>
-    </div>
+            <h2>Scan QR Code<\/h2>
+            <div id="reader"><\/div>
+            <button class="btn btn-cancel" onclick="hideScanner()">Cancel<\/button>
+        <\/div>
+    <\/div>
 
     <script>
         const html5QrCode = new Html5Qrcode("reader");
@@ -209,7 +210,7 @@ var resultsFile = `<!DOCTYPE html>
         const options = {
             yes_no: ["-", "Yes", "No"],
             pos: ["-", "Right", "Hub", "Left"],
-            hang: ["-", "1", "2", "3", "N/A"],
+            hang: ["-", "1", "2", "3", "N\/A"],
             role: ["-", "defense", "collect fuel", "climb", "none"],
             def_target: ["-", "opposing hub", "zone"],
             def_zone: ["-", "trench", "bump", "both"],
@@ -338,7 +339,7 @@ var resultsFile = `<!DOCTYPE html>
             list.innerHTML = "";
 
             if (!allReports.length) {
-                list.innerHTML = '<p style="text-align:center; color:#999; margin:40px 0;">No reports scanned yet.</p>';
+                list.innerHTML = '<p style="text-align:center; color:#999; margin:40px 0;">No reports scanned yet.<\/p>';
                 return;
             }
 
@@ -354,7 +355,7 @@ var resultsFile = `<!DOCTYPE html>
 
                     const sum = document.createElement('div');
                     sum.className = 'report-summary';
-                    sum.innerHTML = \`<span>Team \${report['Team #'] || '???'}</span><span style="font-weight:normal;color:#666;font-size:0.8em">\${report['Scout Name'] || 'Unknown'}</span>\`;
+                    sum.innerHTML = \`<span>Team \${report['Team #'] || '???'}<\/span><span style="font-weight:normal;color:#666;font-size:0.8em">\${report['Scout Name'] || 'Unknown'}<\/span>\`;
                     sum.onclick = () => item.classList.toggle('expanded');
 
                     const det = document.createElement('div');
@@ -363,7 +364,7 @@ var resultsFile = `<!DOCTYPE html>
                     let html = "";
                     for (const [k, v] of Object.entries(report)) {
                         if (!v || v === "-" || v === "none" || v === "Select...") continue;
-                        html += \`<div class="data-line"><span class="label">\${k}</span><span class="value">\${v}</span></div>\`;
+                        html += \`<div class="data-line"><span class="label">\${k}<\/span><span class="value">\${v}<\/span><\/div>\`;
                     }
                     det.innerHTML = html;
 
@@ -384,7 +385,7 @@ var resultsFile = `<!DOCTYPE html>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Scouting Export - \${dateStr}</title>
+    <title>Scouting Export - \${dateStr}<\/title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f8f9fa; color: #333; }
         .controls { 
@@ -396,7 +397,10 @@ var resultsFile = `<!DOCTYPE html>
         th { background-color: #f1f3f5; font-weight: 600; cursor: default; }
         tr { cursor: pointer; }
         tr:nth-child(even) { background-color: #fafafa; }
+        
+        \/* The "Selected" State *\/
         tr.selected { background-color: #dee2e6 !important; }
+        
         .btn-copy { 
             padding: 10px 20px; font-weight: bold; cursor: pointer; 
             background: #0f9d58; color: white; border: none; border-radius: 4px; 
@@ -405,30 +409,30 @@ var resultsFile = `<!DOCTYPE html>
         .btn-copy:hover { background: #0b8043; }
         .btn-copy:active { transform: translateY(1px); }
         .status-msg { font-size: 14px; color: #666; }
-    </style>
-</head>
+    <\/style>
+<\/head>
 <body>
-    <h2>Scouting Data: \${dateStr}</h2>
+    <h2>Scouting Data: \${dateStr}<\/h2>
     
     <div class="controls">
-        <button class="btn-copy" onclick="copySelectedRows()">Copy Selected Rows to Sheets</button>
-        <span class="status-msg" id="statusMsg">0 row(s) selected</span>
-    </div>
+        <button class="btn-copy" onclick="copySelectedRows()">Copy Selected Rows to Sheets<\/button>
+        <span class="status-msg" id="statusMsg">0 row(s) selected<\/span>
+    <\/div>
     
     <table>
         <thead>
             <tr>
-                \${headers.map(h => \`<th>\${h}</th>\`).join("")}
-            </tr>
-        </thead>
+                \${headers.map(h => \`<th>\${h}<\/th>\`).join("")}
+            <\/tr>
+        <\/thead>
         <tbody>
             \${allReports.map(row => \`
                 <tr onclick="toggleRow(this)">
-                    \${headers.map(h => \`<td class="data-cell">\${row[h] || ""}</td>\`).join("")}
-                </tr>
+                    \${headers.map(h => \`<td class="data-cell">\${row[h] || ""}<\/td>\`).join("")}
+                <\/tr>
             \`).join("")}
-        </tbody>
-    </table>
+        <\/tbody>
+    <\/table>
 
     <script>
         function toggleRow(rowElement) {
@@ -449,10 +453,11 @@ var resultsFile = `<!DOCTYPE html>
                 return;
             }
 
+            \/\/ Convert selected rows to Tab-Separated Values (TSV)
             const tsvData = Array.from(selectedRows).map(row => {
                 const cells = row.querySelectorAll('.data-cell');
-                return Array.from(cells).map(td => td.innerText).join("\\t");
-            }).join("\\n");
+                return Array.from(cells).map(td => td.innerText).join("\\\\t");
+            }).join("\\\\n");
 
             navigator.clipboard.writeText(tsvData).then(() => {
                 const btn = document.querySelector('.btn-copy');
@@ -468,12 +473,12 @@ var resultsFile = `<!DOCTYPE html>
                 alert("Error copying to clipboard: " + err);
             });
         }
-    <\/script>
-<\/body>
-<\/html>\`;
+    <\\\/script>
+<\\\/body>
+<\\\/html>\`;
 
-            // Download Logic
-            const blob = new Blob([htmlContent], { type: 'text/html' });
+            \/\/ Download Logic
+            const blob = new Blob([htmlContent], { type: 'text\/html' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -485,4 +490,5 @@ var resultsFile = `<!DOCTYPE html>
         }
     <\/script>
 <\/body>
+
 <\/html>`;

@@ -471,6 +471,8 @@ async function downloadOfflinePackage() {
     }
 
     const zip = new JSZip();
+    const libraries = zip.folder("libraries");
+    const data = zip.folder("data");
 
     try {
         /* ---------- INTERNAL FILES ---------- */
@@ -491,10 +493,10 @@ async function downloadOfflinePackage() {
 
         /* ---------- ADDING TO ZIP ---------- */
         zip.file("index.html", file1);
-        zip.file("qrcode.min.js", file2);
-        zip.file("jszip.min.js", file3);
+        libraries.file("qrcode.min.js", file2);
+        libraries.file("jszip.min.js", file3);
         zip.file("results.html", file4);
-        zip.file("html5-qrcode.min.js", file5);
+        libraries.file("html5-qrcode.min.js", file5);
 
         /* ---------- GENERATE AND DOWNLOAD ---------- */
         const blob = await zip.generateAsync({ type: "blob" });
@@ -629,7 +631,7 @@ async function downloadOfflinePackage() {
                     data.push(getVal(i));
                 }
             });
-            let str = data.join('|'); // The QR code is now just: "John|1234|1|2|1|20|5|..."
+            let str = data.join('|');
 
 
             document.getElementById('qr-code').innerHTML = "";
