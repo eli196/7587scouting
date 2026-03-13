@@ -377,116 +377,144 @@ var resultsFile = `<!DOCTYPE html>
         function exportToHTMLFile() {
             if (!allReports || !allReports.length) return;
 
-            const headers = Object.keys(allReports[0]);
             const dateStr = new Date().toISOString().split('T')[0];
             const fileName = \`scouting_\${dateStr}.html\`;
 
-            let htmlContent = \`
+            // Define the exact order and labels requested by the user
+            // Maps [Display Label]: [Internal Key Suffix]
+            const fieldMapping = [
+                { label: "Starting Position", key: "Start Pos" },
+                { label: "A: Did they move", key: "Auto Moved" },
+                { label: "A: Hub score", key: "Auto Hub" },
+                { label: "A: Did they hang", key: "Auto Hang" },
+                { label: "A: Score most", key: "Auto Most" },
+                { label: "T: Did they move", key: "Trans Moved" },
+                { label: "T: Hub score", key: "Trans Hub" },
+                { label: "T: Cycle time", key: "Trans Cycle" },
+                { label: "T: Did they hang", key: "Trans Hang" },
+                // Phase 1 Active
+                { label: "IA: Did they move", key: "Init (Act): Moved" },
+                { label: "IA: Hub score", key: "Init (Act): Hub Score" },
+                { label: "IA: Cycle time", key: "Init (Act): Cycle" },
+                { label: "IA: Collect fuel", key: "Init (Act): Neut. Zone" },
+                { label: "IA: Amt collected", key: "Init (Act): Fuel Amt" },
+                { label: "IA: Fuel cycle time", key: "Init (Act): Fuel Cycle" },
+                { label: "IA: Did they hang", key: "Init (Act): Hang" },
+                // Phase 1 Inactive
+                { label: "II: Did they move", key: "Init (In): Moved" },
+                { label: "II: What role did they play", key: "Init (In): Role" },
+                // Phase 2 Active
+                { label: "SA: Did they move", key: "2nd (Act): Moved" },
+                { label: "SA: Hub score", key: "2nd (Act): Hub Score" },
+                { label: "SA: Cycle time", key: "2nd (Act): Cycle" },
+                { label: "SA: Collect fuel", key: "2nd (Act): Neut. Zone" },
+                { label: "SA: Amt collected", key: "2nd (Act): Fuel Amt" },
+                { label: "SA: Fuel cycle time", key: "2nd (Act): Fuel Cycle" },
+                { label: "SA: Did they hang", key: "2nd (Act): Hang" },
+                // Phase 2 Inactive
+                { label: "SI: Did they move", key: "2nd (In): Moved" },
+                { label: "SI: What role did they play", key: "2nd (In): Role" },
+                // Endgame
+                { label: "EN: Did they move", key: "End Moved" },
+                { label: "EN: Hub score", key: "End Hub" },
+                { label: "EN: Cycle time", key: "End Cycle" },
+                { label: "EN: Did they hang", key: "End Hang" },
+                { label: "EN: Additional Ranking Points", key: "RP Type" },
+                //Ratings
+                { label: "A Rating", key: "R: Auto" },
+                { label: "T Rating", key: "R: Trans" },
+                { label: "Ac Rating", key: "R: Active" },
+                { label: "In Rating", key: "R: Inactive" },
+                { label: "En Rating", key: "R: End" },
+                { label: "Ov Rating", key: "R: Overall" },
+                { label: "Strengths", key: "Strengths" },
+                { label: "Explain", key: "Explain" },
+                { label: "Notes", key: "Notes" },
+            ];
+
+                        let htmlContent = \`
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Scouting Export - \${dateStr}<\/title>
+    <title>Vertical Export - \${dateStr}<\/title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: #f8f9fa; color: #333; }
-        .controls { 
-            position: sticky; top: 0; background: #f8f9fa; padding: 15px 0; 
-            border-bottom: 2px solid #dee2e6; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;
-        }
-        table { border-collapse: collapse; width: 100%; background: white; border: 1px solid #dee2e6; }
-        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; font-size: 14px; }
-        th { background-color: #f1f3f5; font-weight: 600; cursor: default; }
-        tr { cursor: pointer; }
-        tr:nth-child(even) { background-color: #fafafa; }
-        
-        \/* The "Selected" State *\/
-        tr.selected { background-color: #dee2e6 !important; }
-        
-        .btn-copy { 
-            padding: 10px 20px; font-weight: bold; cursor: pointer; 
-            background: #0f9d58; color: white; border: none; border-radius: 4px; 
-            transition: background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn-copy:hover { background: #0b8043; }
-        .btn-copy:active { transform: translateY(1px); }
-        .status-msg { font-size: 14px; color: #666; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .controls { position: sticky; top: 0; background: #f4f4f9; padding: 10px; border-bottom: 2px solid #ccc; margin-bottom: 20px; }
+        table { border-collapse: collapse; background: white; min-width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; white-space: nowrap; }
+        th { background: #eee; position: sticky; left: 0; z-index: 2; }
+        .selectable-col { cursor: pointer; transition: 0.2s; }
+        .selectable-col:hover { background: #e8f4fd; }
+        .selected { background: #3498db !important; color: white; }
+        .btn-copy { padding: 10px 20px; background: #2ecc71; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
     <\/style>
 <\/head>
 <body>
-    <h2>Scouting Data: \${dateStr}<\/h2>
-    
     <div class="controls">
-        <button class="btn-copy" onclick="copySelectedRows()">Copy Selected Rows to Sheets<\/button>
-        <span class="status-msg" id="statusMsg">0 row(s) selected<\/span>
+        <button class="btn-copy" onclick="copySelectedColumns()">Copy Selected Columns to Sheets<\/button>
+        <p id="status">Click columns to select them for export<\/p>
     <\/div>
     
-    <table>
+    <table id="data-table">
         <thead>
             <tr>
-                \${headers.map(h => \`<th>\${h}<\/th>\`).join("")}
+                <th>Field \/ Report<\/th>
+                \${allReports.map((r, i) => \`<th class="selectable-col" onclick="toggleCol(\${i})">Team \${r['Team #'] || i + 1}<\/th>\`).join('')}
             <\/tr>
         <\/thead>
         <tbody>
-            \${allReports.map(row => \`
-                <tr onclick="toggleRow(this)">
-                    \${headers.map(h => \`<td class="data-cell">\${row[h] || ""}<\/td>\`).join("")}
+            \${fieldMapping.map(f => \`
+                <tr>
+                    <th>\${f.label}<\/th>
+                    \${allReports.map((r, i) => \`<td class="col-\${i}">\${r[f.key] || "-"}<\/td>\`).join('')}
                 <\/tr>
-            \`).join("")}
+            \`).join('')}
         <\/tbody>
     <\/table>
 
     <script>
-        function toggleRow(rowElement) {
-            rowElement.classList.toggle('selected');
-            updateCount();
-        }
+        let selectedIndices = [];
 
-        function updateCount() {
-            const count = document.querySelectorAll('tr.selected').length;
-            document.getElementById('statusMsg').innerText = count + " row(s) selected";
-        }
-
-        function copySelectedRows() {
-            const selectedRows = document.querySelectorAll('tr.selected');
-            
-            if (selectedRows.length === 0) {
-                alert("Please click on some rows to select them first!");
-                return;
+        function toggleCol(idx) {
+            const th = document.querySelectorAll('.selectable-col')[idx];
+            if (selectedIndices.includes(idx)) {
+                selectedIndices = selectedIndices.filter(i => i !== idx);
+                th.classList.remove('selected');
+            } else {
+                selectedIndices.push(idx);
+                th.classList.add('selected');
             }
+            document.getElementById('status').innerText = selectedIndices.length + " column(s) selected";
+        }
 
-            \/\/ Convert selected rows to Tab-Separated Values (TSV)
-            const tsvData = Array.from(selectedRows).map(row => {
-                const cells = row.querySelectorAll('.data-cell');
-                return Array.from(cells).map(td => td.innerText).join("\\\\t");
-            }).join("\\\\n");
+        function copySelectedColumns() {
+            if (selectedIndices.length === 0) return alert("Select at least one column!");
+            
+            const rows = document.querySelectorAll('#data-table tbody tr');
+            let tsvLines = [];
 
-            navigator.clipboard.writeText(tsvData).then(() => {
-                const btn = document.querySelector('.btn-copy');
-                const originalText = btn.innerText;
-                btn.innerText = "COPIED!";
-                btn.style.background = "#4285f4";
-                
-                setTimeout(() => { 
-                    btn.innerText = originalText; 
-                    btn.style.background = "#0f9d58";
-                }, 2000);
-            }).catch(err => {
-                alert("Error copying to clipboard: " + err);
+            rows.forEach(row => {
+                const values = selectedIndices.map(idx => {
+                    return row.querySelectorAll('td')[idx].innerText;
+                });
+                tsvLines.push(values.join("\\\\t"));
+            });
+
+            const finalString = tsvLines.join("\\\\n");
+            navigator.clipboard.writeText(finalString).then(() => {
+                alert("Copied!");
             });
         }
     <\\\/script>
-<\\\/body>
-<\\\/html>\`;
+<\/body>
+<\/html>\`;
 
-            \/\/ Download Logic
-            const blob = new Blob([htmlContent], { type: 'text\/html' });
+            const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
             a.download = fileName;
-            document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
         }
     <\/script>
 <\/body>
